@@ -1,0 +1,21 @@
+@startuml
+title Ecosistema Musical - Diseño de Relaciones
+
+class Cantante {
+}
+
+class Disco {
+}
+
+class Cancion {
+}
+
+class Playlist {
+}
+
+Cantante -- Disco : Asociación
+Disco *-- Cancion : Composición
+Playlist o-- Cancion : Agregación
+Cantante ..> Playlist : Uso
+
+@enduml
