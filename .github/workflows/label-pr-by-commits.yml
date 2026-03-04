@@ -1,8 +1,9 @@
-name: Analyze PR Commit Pattern
+name: Validate PR Reto 002
 
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
+    branches: [reto-002]
   workflow_dispatch:
 
 permissions:
@@ -10,130 +11,141 @@ permissions:
   contents: read
 
 jobs:
-  analyze-commits:
+  validate:
     runs-on: ubuntu-latest
-    name: Analyze commit pattern and label PR
+    name: Validate delivery
     steps:
-      - name: Get PR commits
-        id: get_commits
+      - name: Validate PR
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: commits } = await github.rest.pulls.listCommits({
+            // ── Configuración ──────────────────────────────────────
+            const DEADLINE      = new Date('2026-03-04T14:15:00+01:00');
+            const HARD_DEADLINE = new Date('2026-03-04T23:59:59+01:00');
+            const REQUIRED_BRANCH = 'reto-002';
+            const ALLOWED_PATHS = /^entregas\/[^/]+\/(README\.md|docs\/.+)$/;
+            const STUDENT_ROOT  = /^entregas\/([^/]+)\//;
+
+            // ── Obtener archivos del PR ────────────────────────────
+            const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
               per_page: 100
             });
 
-            const dates = new Set();
-            commits.forEach(commit => {
-              const rawDate = commit.commit.author.date || commit.commit.committer.date;
-              if (rawDate) {
-                const date = new Date(rawDate);
-                if (!isNaN(date.getTime())) {
-                  dates.add(date.toISOString().split('T')[0]);
-                }
-              }
-            });
+            const filePaths = files.map(f => f.filename);
+            const errors = [];
+            const warnings = [];
 
-            const uniqueDays = dates.size;
-            const totalCommits = commits.length;
-
-            console.log(`Total commits: ${totalCommits}, Unique days: ${uniqueDays}`);
-
-            let label;
-            let color;
-            let description;
-
-            if (uniqueDays >= 6) {
-              label = 'sostenido-excelente';
-              color = '#006b75';
-              description = '✅ Trabajo diario constante (6+ días)';
-            } else if (uniqueDays >= 4) {
-              label = 'sostenido-bueno';
-              color = '#0e8a16';
-              description = '✅ Buen trabajo sostenido (4-5 días)';
-            } else if (uniqueDays === 3) {
-              label = 'sostenido-parcial';
-              color = '#fef2c0';
-              description = '⚠️ Trabajo parcialmente sostenido (3 días)';
-            } else {
-              label = 'no-sostenido';
-              color = '#e99695';
-              description = '❌ Trabajo no sostenido (1-2 días)';
+            // ── 1. Rama destino ────────────────────────────────────
+            const base = context.payload.pull_request.base.ref;
+            if (base !== REQUIRED_BRANCH) {
+              errors.push(`PR dirigido a \`${base}\`, debe ser \`${REQUIRED_BRANCH}\`.`);
             }
 
-            core.setOutput('label', label);
-            core.setOutput('color', color);
-            core.setOutput('description', description);
-            core.setOutput('unique_days', uniqueDays.toString());
-            core.setOutput('total_commits', totalCommits.toString());
+            // ── 2. Rutas válidas y carpeta única ───────────────────
+            const students = new Set();
 
-      - name: Add label to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const label = '${{ steps.get_commits.outputs.label }}';
-            const description = '${{ steps.get_commits.outputs.description }}';
-            const uniqueDays = '${{ steps.get_commits.outputs.unique_days }}';
-            const totalCommits = '${{ steps.get_commits.outputs.total_commits }}';
+            for (const path of filePaths) {
+              const rootMatch = path.match(STUDENT_ROOT);
+              if (!rootMatch) {
+                errors.push(`Archivo fuera de carpeta de entregas: \`${path}\``);
+                continue;
+              }
+              students.add(rootMatch[1]);
+              if (!ALLOWED_PATHS.test(path)) {
+                errors.push(`Archivo no permitido en este reto: \`${path}\``);
+              }
+            }
 
-            const oldLabels = [
-              'sostenido-excelente',
-              'sostenido-bueno',
-              'sostenido-parcial',
-              'no-sostenido'
-            ];
+            if (students.size > 1) {
+              errors.push(`Archivos de múltiples carpetas: ${[...students].map(s => `\`${s}\``).join(', ')}`);
+            }
 
-            const currentLabels = context.payload.pull_request.labels.map(l => l.name);
+            // ── 3. Artefactos obligatorios ─────────────────────────
+            const hasReadme = filePaths.some(p => /^entregas\/[^/]+\/README\.md$/.test(p));
+            const hasDocs   = filePaths.some(p => /^entregas\/[^/]+\/docs\/.+/.test(p));
 
-            for (const oldLabel of oldLabels) {
-              if (currentLabels.includes(oldLabel) && oldLabel !== label) {
-                await github.rest.issues.removeLabel({
+            if (!hasReadme) errors.push('Falta `README.md` en la carpeta de entregas.');
+            if (!hasDocs)   errors.push('Falta contenido en la carpeta `docs/`.');
+
+            // ── 4. Plazo ───────────────────────────────────────────
+            const now = new Date();
+            let deadlineLabel = '';
+
+            if (now > HARD_DEADLINE) {
+              errors.push('Entrega posterior al límite absoluto (4 mar 23:59:59 CET).');
+              deadlineLabel = 'fuera-de-plazo';
+            } else if (now > DEADLINE) {
+              warnings.push('Entrega fuera de plazo (posterior a 14:15 CET). Se acepta con penalización.');
+              deadlineLabel = 'fuera-de-plazo';
+            }
+
+            // ── Etiquetas ──────────────────────────────────────────
+            if (deadlineLabel) {
+              try {
+                await github.rest.issues.addLabels({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
-                  name: oldLabel
+                  labels: [deadlineLabel]
                 });
+              } catch (e) {
+                console.log(`No se pudo añadir etiqueta: ${e.message}`);
               }
             }
 
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: [label]
-            });
+            // ── Comentario ─────────────────────────────────────────
+            const student = [...students][0] || '—';
+            let body = `## Validación de entrega — Reto 002\n\n`;
+            body += `**Alumno:** \`${student}\` | **Archivos:** ${filePaths.length}\n\n`;
 
-            const comment = `## 📊 Análisis de patrón de commits\n\n` +
-              `- **Total de commits:** ${totalCommits}\n` +
-              `- **Días únicos de trabajo:** ${uniqueDays}\n` +
-              `- **Etiqueta:** ${description}`;
+            if (errors.length === 0 && warnings.length === 0) {
+              body += `✅ Entrega válida y dentro de plazo.\n`;
+            } else {
+              if (errors.length > 0) {
+                body += `### ❌ Errores (bloquean el merge)\n\n`;
+                body += errors.map(e => `- ${e}`).join('\n') + '\n\n';
+              }
+              if (warnings.length > 0) {
+                body += `### ⚠️ Avisos\n\n`;
+                body += warnings.map(w => `- ${w}`).join('\n') + '\n';
+              }
+            }
 
+            // Actualizar o crear comentario
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
 
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('Análisis de patrón de commits')
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' &&
+              c.body.includes('Validación de entrega — Reto 002')
             );
 
-            if (botComment) {
+            const commentParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            };
+
+            if (existing) {
               await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: comment
+                ...commentParams,
+                comment_id: existing.id,
+                body
               });
             } else {
               await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                ...commentParams,
                 issue_number: context.issue.number,
-                body: comment
+                body
               });
+            }
+
+            // ── Resultado ──────────────────────────────────────────
+            if (errors.length > 0) {
+              core.setFailed(`Entrega rechazada: ${errors.length} error(es).`);
             }
