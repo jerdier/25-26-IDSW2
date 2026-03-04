@@ -23,7 +23,7 @@ jobs:
             const DEADLINE      = new Date('2026-03-05T14:15:00+01:00');
             const HARD_DEADLINE = new Date('2026-03-05T23:59:59+01:00');
             const REQUIRED_BRANCH = 'reto-002';
-            const ALLOWED_PATHS = /^entregas\/[^/]+\/(README\.md|docs\/.+)$/;
+            const ALLOWED_PATHS = /^entregas\/[^/]+\/(README\.md|docs\/legibilidad\.md)$/;
             const STUDENT_ROOT  = /^entregas\/([^/]+)\//;
 
             // ── Obtener archivos del PR ────────────────────────────
@@ -72,10 +72,10 @@ jobs:
 
             // ── 3. Artefactos obligatorios ─────────────────────────
             const hasReadme = filePaths.some(p => /^entregas\/[^/]+\/README\.md$/.test(p));
-            const hasDocs   = filePaths.some(p => /^entregas\/[^/]+\/docs\/.+/.test(p));
+            const hasDocs   = filePaths.some(p => /^entregas\/[^/]+\/docs\/legibilidad\.md$/.test(p));
 
             if (!hasReadme) errors.push('Falta `README.md` en la carpeta de entregas.');
-            if (!hasDocs)   errors.push('Falta contenido en la carpeta `docs/`.');
+            if (!hasDocs)   errors.push('Falta `docs/legibilidad.md`.');
 
             // ── 4. Plazo ───────────────────────────────────────────
             const now = new Date();
