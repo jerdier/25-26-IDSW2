@@ -1,7 +1,7 @@
 |Categoría||Justificación||
 |-|-|-|-|
 |**Nombrado**|
-|Ejemplo +||<a href="https://github.dev/jerdier/24-25-PRG1/blob/main/entregas/rodriguezJavier/Reto-002/PiedraPapelTijera.java">Archivo</a>|
+|Ejemplo +|jugadaUsuario y jugadaComputadora son dos buenos ejemplos de nombrado ya que son autoconclusivos y sabes lo que contiene al instante|<a href="https://github.dev/jerdier/24-25-PRG1/blob/main/entregas/rodriguezJavier/Reto-002/PiedraPapelTijera.java">Archivo</a>|
 |Ejemplo -||PR corrección|
 |Ejemplo -||PR corrección|
 |**Comentarios**|
