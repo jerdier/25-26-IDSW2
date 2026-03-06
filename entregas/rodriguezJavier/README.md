@@ -6,8 +6,8 @@
 |Ejemplo -|Commit con un nombre muy confuso, a día de hoy no se lo que quise decir con EscalaAcorde++, si fuera una versión mejorada debería ser EscalaAcordesMejora o v2|<a href="https://github.com/jerdier/24-25-PRG2/commit/7b3194fc62df582032c5fc075ee93f6531b6cf89">PR corrección</a>|
 |**Comentarios**|
 |Ejemplo +|No tengo practicamente ningún código con comentarios y los que he encontrado tienen comentarios muy repetitivos o que no aportan nada de información||
-|Ejemplo -||PR corrección|
-|Ejemplo -||PR corrección|
+|Ejemplo -|Eliminé todos los comentarios que explicaban código que se entendía a simple vista y no aportaba nada y mejoré un comentario sobre el bucle del tiempo para decir algo mas concreto y simplificado|<a href="https://github.com/jerdier/23-24-prg2/pull/1">PR corrección</a>|
+|Ejemplo -|No he encontrado mas códigos con comentarios en varios de mis forks incluidas otras asignaturas|PR corrección|
 |**Formato**|
 |Ejemplo +|||
 |Ejemplo -||PR corrección|
