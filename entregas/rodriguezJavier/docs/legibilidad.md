@@ -28,4 +28,4 @@
 |Ejemplo -|He eliminado la repetición manual de las palabras 'piedra', 'papel' y 'tijera' en los mensajes y validaciones para evitar el DRY en el código. Ahora si en el futuro necesito añadir una nueva jugada, solo tendré que modificar esa lista en un único lugar, facilitando su mantenimiento.|<a href="https://github.com/jerdier/24-25-PRG1/pull/1">PR corrección</a>|
 |**YAGNI**|
 |Ejemplo +|En este código pido la jugada, la máquina elige la suya, comparo y digo quién gana. No he escrito código "por si acaso", evitando la "hinchazón de código".|<a href="https://github.com/jerdier/24-25-PRG1/blob/correccion/entregas/rodriguezJavier/Reto-002/PiedraPapelTijera.java">Archivo</a>|
-|Ejemplo -||<a href="">PR corrección</a>|
+|Ejemplo -|No encontré ejemplo de YAGNI en ningún código con varios vistazos a varios códigos del pasado.||
