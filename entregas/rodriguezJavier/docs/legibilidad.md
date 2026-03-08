@@ -17,9 +17,9 @@
 |Ejemplo -|Mal uso del nombre de variables en minutosEnUnDia, debería ser MINUTOS_EN_UN_DIA al estándar de nomenclatura de variables constantes.|<a href="https://github.com/jerdier/23-24-prg2/pull/1">PR corrección</a>|
 |Ejemplo -|No encontré ejemplos distintos sobre estándares que estuvieran mal.||
 |**Consistencia**|
-|Ejemplo +|||
-|Ejemplo -||PR corrección|
-|Ejemplo -||PR corrección|
+|Ejemplo +|Sigo durante todo el código una buena consistencia en el nombramiento de clases y variables.|<a href="https://github.ntcom/jerdier/23-24-prg2/blob/main/entregas/RodriguezJavier/Reto-001/Cajeros.java">Archivo</a>|
+|Ejemplo -|Utilizo un numero 4 para los cajeros en vez de un .length y sin embargo, al final para los clientes utilizo un .length|<a href="https://github.com/jerdier/23-24-prg2/pull/1">PR corrección</a>|
+|Ejemplo -|No encuentro mas errores de consistencia, no estoy seguro de si puede haber más como el anterior||
 |**Código muerto**|
 |Ejemplo +|||
 |Ejemplo -||PR corrección|
